@@ -1,0 +1,90 @@
+---
+title: "Mapping with R"
+author: "Abhishek Kumar"
+date: "7 September 2020"
+output: github_document
+---
+
+# Data
+
+I want to prepare a map for global distribution of tropical forests. For this,
+I will be using the spatial data provided by the 
+[The Nature Conservancy](https://www.nature.org/en-us/).
+
+* [Terrestrial Ecoregions](https://geospatial.tnc.org/datasets/b1636d640ede4d6ca8f5e369f2dc368b
+) spatial data [51 Mb] 
+
+The country level data for world countries can be obtained from the [Natural Earth](https://www.naturalearthdata.com/)
+at desired level of scale from the following links:
+
+* [Cultural Admin 0 – Countries at 1:50](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip)
+
+# Packages
+
+The `sf` package will be used to read the shapefiles using the \verb|st_read()|
+function and the package `tmap` will be used for visualisation and mapping. The
+`dplyr` package will be used for data manipulation.
+
+```{r}
+library(sf)
+library(tmap)
+library(dplyr)
+```
+
+# Reading the Data
+
+The Geospatial Data Abstraction Library (GDAL) is the swiss army knife for spatial 
+data: it reads and writes vector and raster data from and to practically every 
+file format, or database, of significance. Package `sf` reads and writes using 
+GDAL by the functions $\verb |st_read()|$ and $\verb |st_write()|$.
+
+The data model GDAL uses:
+
+* a data source, which may be a file, directory, or database
+* a layer, which is a single geospatial dataset inside a file or directory or 
+  e.g. a table in a database.
+* the specification of a driver (i.e., which format)
+* driver-specific reading or writing data sources, or layers
+
+This may sound complex, but it is needed to map to over 200 data formats! Package 
+`sf` tries hard to simplify this where possible (e.g. a file contains a single 
+layer), but this vignette will try to point you to the options
+
+```{r}
+ec_sf <- st_read("~/ArcGIS/Ecoregions/terr-ecoregions-TNC/tnc_terr_ecoregions.shp")
+world <- st_read("~/ArcGIS/Admin/World_admin/ne_50m_admin_0_countries.shp")
+```
+
+```{r}
+ec_sf %>% select(WWF_MHTNUM, WWF_MHTNAM) %>% group_by(WWF_MHTNUM, WWF_MHTNAM) %>% summarise(n = n())
+```
+
+
+#Processign data
+
+The variable `WWF_MHTNUM` uses values for different ecoregions
+
+* 1. Tropical and Subtropical Moist Broadleaf Forests
+* 2. Tropical and Subtropical Dry Broadleaf Forests
+* 3. Tropical and Subtropical Coniferous Forests
+
+So, we can filter the values either <4 or <=3
+
+```{r}
+ec_df <- ec_sf %>% filter(WWF_MHTNUM < 4)
+```
+
+# Plotting the data
+
+* The `tm_shape()` function takes a spatial object (with a class from `sf`, `sp`, 
+`stars`, or `raster`). 
+* `tm_fill()` used to fill the polygons
+
+```{r}
+tm_shape(world) + tm_fill(col = "grey95") + 
+      tm_shape(ec_df) + tm_fill(col = "seagreen") +
+      tm_layout(bg.color = "lightskyblue") +
+      tm_graticules(alpha = 0.2)
+```
+
+
