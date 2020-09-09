@@ -109,7 +109,7 @@ ec_sf %>% select(WWF_MHTNUM, WWF_MHTNAM) %>% group_by(WWF_MHTNUM, WWF_MHTNAM) %>
     ## 15         98 Inland Water               3 (((-69.69894 -15.2406, -69.69627 -15~
     ## 16         99 Rock and Ice               4 (((113.1178 -67.57474, 113.2424 -67.~
 
-Processign data
+Processing data
 ===============
 
 The variable `WWF_MHTNUM` uses values for different ecoregions
